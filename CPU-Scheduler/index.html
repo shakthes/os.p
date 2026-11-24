@@ -57,6 +57,17 @@
           <button id="randomBtn" class="btn btn-secondary">🎲 Random Processes</button>
           <button id="clearAllBtn" class="btn btn-danger">🗑️ Clear All</button>
         </div>
+        <div class="form-group full-width" style="margin-top: 14px;">
+          <label for="presetSelect">⚡ Load Application Preset</label>
+          <select id="presetSelect">
+            <option value="">-- Choose an Application Preset --</option>
+            <option value="textbook">Classic OS Benchmark (Silberschatz / Galvin)</option>
+            <option value="desktop">Interactive Desktop / Time-Sharing (Round Robin)</option>
+            <option value="convoy">Batch Processing &amp; Convoy Effect (FCFS vs SJF)</option>
+            <option value="srtf">Preemption Showcase (SRTF)</option>
+            <option value="realtime">Real-Time &amp; Kernel Tasks (Priority)</option>
+          </select>
+        </div>
       </div>
 
       <!-- Process Table -->

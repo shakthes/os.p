@@ -42,6 +42,7 @@ const dom = {
   addBtn:       $("addProcessBtn"),
   randomBtn:    $("randomBtn"),
   clearBtn:     $("clearAllBtn"),
+  presetSelect: $("presetSelect"),
   algorithm:    $("algorithm"),
   quantum:      $("quantum"),
   quantumGroup: $("quantumGroup"),
@@ -185,8 +186,93 @@ function generateRandom() {
 function clearAll() {
   if (simRunning) return;
   processes = [];
+  if (dom.presetSelect) dom.presetSelect.value = "";
   renderProcessTable();
   resetSimulation();
+}
+
+/** Pre-configured application workloads for demonstration & benchmark */
+const PRESETS = {
+  textbook: {
+    name: "Classic OS Benchmark (Silberschatz / Galvin)",
+    algorithm: "RR",
+    quantum: 2,
+    processes: [
+      { pid: "P1", arrival: 0, burst: 8, priority: 3 },
+      { pid: "P2", arrival: 1, burst: 4, priority: 1 },
+      { pid: "P3", arrival: 2, burst: 9, priority: 4 },
+      { pid: "P4", arrival: 3, burst: 5, priority: 2 }
+    ]
+  },
+  desktop: {
+    name: "Interactive Desktop / Time-Sharing",
+    algorithm: "RR",
+    quantum: 2,
+    processes: [
+      { pid: "P1", arrival: 0, burst: 8, priority: 3 }, // Web Browser
+      { pid: "P2", arrival: 1, burst: 4, priority: 2 }, // Text Editor
+      { pid: "P3", arrival: 2, burst: 7, priority: 4 }, // Music Player
+      { pid: "P4", arrival: 3, burst: 5, priority: 3 }  // Background Sync
+    ]
+  },
+  convoy: {
+    name: "Batch Processing & Convoy Effect",
+    algorithm: "FCFS",
+    processes: [
+      { pid: "P1", arrival: 0, burst: 18, priority: 3 }, // Large Batch Job
+      { pid: "P2", arrival: 1, burst: 2,  priority: 1 }, // Quick I/O
+      { pid: "P3", arrival: 2, burst: 1,  priority: 2 }, // Health Ping
+      { pid: "P4", arrival: 3, burst: 3,  priority: 2 }  // Status Check
+    ]
+  },
+  srtf: {
+    name: "Preemption Showcase (SRTF)",
+    algorithm: "SRTF",
+    processes: [
+      { pid: "P1", arrival: 0, burst: 10, priority: 3 }, // Long task
+      { pid: "P2", arrival: 2, burst: 3,  priority: 2 }, // Preempts P1
+      { pid: "P3", arrival: 4, burst: 1,  priority: 1 }, // Preempts P2
+      { pid: "P4", arrival: 6, burst: 4,  priority: 2 }  // Standard task
+    ]
+  },
+  realtime: {
+    name: "Real-Time & Kernel Tasks (Priority)",
+    algorithm: "PRIORITY",
+    processes: [
+      { pid: "P1", arrival: 2, burst: 2,  priority: 1 }, // Hardware Interrupt
+      { pid: "P2", arrival: 0, burst: 6,  priority: 2 }, // UI Compositor
+      { pid: "P3", arrival: 0, burst: 8,  priority: 4 }, // File Download
+      { pid: "P4", arrival: 1, burst: 12, priority: 5 }  // Antivirus Scan
+    ]
+  }
+};
+
+/**
+ * Loads a workload preset into the process table and selects its recommended algorithm.
+ * @param {string} presetKey
+ */
+function loadPreset(presetKey) {
+  if (simRunning) return;
+  const preset = PRESETS[presetKey];
+  if (!preset) return;
+
+  processes = preset.processes.map((p, idx) => ({
+    ...p,
+    state: STATE.NEW,
+    color: idx % COLOR_COUNT,
+  }));
+
+  if (preset.algorithm && dom.algorithm) {
+    dom.algorithm.value = preset.algorithm;
+    if (preset.quantum && dom.quantum) {
+      dom.quantum.value = preset.quantum;
+    }
+    dom.algorithm.dispatchEvent(new Event("change"));
+  }
+
+  renderProcessTable();
+  resetSimulation();
+  dom.formError.textContent = "";
 }
 
 /* ──────────────────────────── RENDER PROCESS TABLE ──────────────────────────── */
@@ -222,6 +308,13 @@ function renderProcessTable() {
 dom.addBtn.addEventListener("click",    addProcess);
 dom.randomBtn.addEventListener("click", generateRandom);
 dom.clearBtn.addEventListener("click",  clearAll);
+if (dom.presetSelect) {
+  dom.presetSelect.addEventListener("change", e => {
+    if (e.target.value) {
+      loadPreset(e.target.value);
+    }
+  });
+}
 
 // Allow pressing Enter in PID field to submit
 dom.pid.addEventListener("keydown", e => { if (e.key === "Enter") addProcess(); });
